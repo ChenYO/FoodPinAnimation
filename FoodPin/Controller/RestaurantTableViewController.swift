@@ -149,9 +149,9 @@ class RestaurantTableViewController: UITableViewController, NSFetchedResultsCont
         }
         
         // Customize the action buttons
-        deleteAction.backgroundColor = UIColor(red: 231.0/255.0, green: 76.0/255.0, blue: 60.0/255.0, alpha: 1.0)
+        deleteAction.backgroundColor = UIColor(red: 231, green: 76, blue: 60)
         deleteAction.image = UIImage(named: "delete")
-        shareAction.backgroundColor = UIColor(red: 254.0/255.0, green: 149.0/255.0, blue: 38.0/255.0, alpha: 1.0)
+        shareAction.backgroundColor = UIColor(red: 254, green: 149, blue: 38)
         shareAction.image = UIImage(named: "share")
         
         let swipeConfiguration = UISwipeActionsConfiguration(actions: [deleteAction, shareAction])
