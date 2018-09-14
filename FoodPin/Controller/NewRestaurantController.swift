@@ -7,9 +7,12 @@
 //
 
 import UIKit
+import CoreData
 
 class NewRestaurantController: UITableViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
+    var restaurant: RestaurantMo!
+    
     @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var nameTextField: RoundedTextField! {
         didSet {
@@ -117,27 +120,54 @@ class NewRestaurantController: UITableViewController, UITextFieldDelegate, UIIma
     
     @IBAction func save(_ sender: UIBarButtonItem) {
         
-        if nameTextField.text == "" || typeTextField.text == "" || addressTextField.text == "" || phoneTextField.text == "" || descriptionTextView.text == ""{
-            let errorAlert = UIAlertController(title: "Oops", message: "We can't proceed because one of the fields is blank. Please note that all fields are required.", preferredStyle: .alert)
-            let confirm = UIAlertAction(title: "Ok", style: .default)
+//        if nameTextField.text == "" || typeTextField.text == "" || addressTextField.text == "" || phoneTextField.text == "" || descriptionTextView.text == ""{
+//            let errorAlert = UIAlertController(title: "Oops", message: "We can't proceed because one of the fields is blank. Please note that all fields are required.", preferredStyle: .alert)
+//            let confirm = UIAlertAction(title: "Ok", style: .default)
+//
+//            errorAlert.addAction(confirm)
+//            present(errorAlert, animated: true, completion: nil)
+//        } else {
+//
+//            let successAlert = UIAlertController(title: "Result", message: "Congratation !", preferredStyle: .alert)
+//            let confirm = UIAlertAction(title: "Ok", style: .default) {
+//                action in
+//                print("Name: \(self.nameTextField.text!)")
+//                print("Type: \(self.typeTextField.text!)")
+//                print("Location: \(self.addressTextField.text!)")
+//                print("Phone: \(self.phoneTextField.text!)")
+//                print("Description: \(self.descriptionTextView.text!)")
+//                self.performSegue(withIdentifier: "unwindToHome", sender: self)
+//            }
+//            successAlert.addAction(confirm)
+//            present(successAlert, animated: true, completion: nil)
+//        }
+        
+        if nameTextField.text == "" || typeTextField.text == "" || addressTextField.text == "" || phoneTextField.text == "" || descriptionTextView.text == "" {
+            let alertController = UIAlertController(title: "Oops", message: "We can't proceed because one of the fields is blank. Please note that all fields are required.", preferredStyle: .alert)
+            let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertController.addAction(alertAction)
+            present(alertController, animated: true, completion: nil)
             
-            errorAlert.addAction(confirm)
-            present(errorAlert, animated: true, completion: nil)
-        } else {
-            
-            let successAlert = UIAlertController(title: "Result", message: "Congratation !", preferredStyle: .alert)
-            let confirm = UIAlertAction(title: "Ok", style: .default) {
-                action in
-                print("Name: \(self.nameTextField.text!)")
-                print("Type: \(self.typeTextField.text!)")
-                print("Location: \(self.addressTextField.text!)")
-                print("Phone: \(self.phoneTextField.text!)")
-                print("Description: \(self.descriptionTextView.text!)")
-                self.performSegue(withIdentifier: "unwindToHome", sender: self)
-            }
-            successAlert.addAction(confirm)
-            present(successAlert, animated: true, completion: nil)
+            return
         }
+        
+        if let appDelegate = (UIApplication.shared.delegate as? AppDelegate) {
+            restaurant = RestaurantMo(context: appDelegate.persistentContainer.viewContext)
+            restaurant.name = nameTextField.text
+            restaurant.type = typeTextField.text
+            restaurant.location = addressTextField.text
+            restaurant.phone = phoneTextField.text
+            restaurant.summary = descriptionTextView.text
+            restaurant.isVisited = false
+            
+            if let restaurantImage = photoImageView.image {
+                restaurant.image = UIImagePNGRepresentation(restaurantImage)
+            }
+            
+            appDelegate.saveContext()
+        }
+        
+        dismiss(animated: true, completion: nil)
     }
     
     /*
