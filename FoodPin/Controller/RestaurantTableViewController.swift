@@ -9,18 +9,33 @@
 import UIKit
 import CoreData
 
-class RestaurantTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
+class RestaurantTableViewController: UITableViewController, NSFetchedResultsControllerDelegate, UISearchResultsUpdating {
 
     // MARK: - Properties
     var restaurants:[RestaurantMo] = []
 
     var fetchResultController: NSFetchedResultsController<RestaurantMo>!
+    
+    // 新增搜尋列變數
+    var searchController: UISearchController?
+    
+    // 儲存搜尋結果
+    var searchResults: [RestaurantMo] = []
+    
     @IBOutlet var emptyRestaurantView: UIView!
     
     // MARK: - View controller life cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //新增搜尋列
+        searchController = UISearchController(searchResultsController: nil)
+//        self.navigationItem.searchController = searchController
+        tableView.tableHeaderView = searchController?.searchBar
+        
+        searchController?.searchResultsUpdater = self
+        searchController?.dimsBackgroundDuringPresentation = false
+        
         tableView.backgroundView = emptyRestaurantView
         tableView.backgroundView?.isHidden = true
         tableView.cellLayoutMarginsFollowReadableWidth = true
@@ -54,12 +69,29 @@ class RestaurantTableViewController: UITableViewController, NSFetchedResultsCont
                 print(error)
             }
         }
+        
+        searchController?.searchBar.placeholder = "Search restaurants..."
+        searchController?.searchBar.barTintColor = .white
+        searchController?.searchBar.backgroundImage = UIImage()
+        searchController?.searchBar.tintColor = UIColor(red: 231, green: 76, blue: 60)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         navigationController?.hidesBarsOnSwipe = true
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        if UserDefaults.standard.bool(forKey: "hasViewedWalkthrough") {
+            return
+        }
+        
+        let storyboard = UIStoryboard(name: "Onboarding", bundle: nil)
+        if let walkthroughViewController = storyboard.instantiateViewController(withIdentifier: "WalkthroughViewController") as? WalkthroughViewController {
+            present(walkthroughViewController, animated: true, completion: nil)
+        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -83,7 +115,12 @@ class RestaurantTableViewController: UITableViewController, NSFetchedResultsCont
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return restaurants.count
+        
+        if (searchController?.isActive)! {
+            return searchResults.count
+        } else {
+            return restaurants.count
+        }
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -91,16 +128,18 @@ class RestaurantTableViewController: UITableViewController, NSFetchedResultsCont
         let cellIdentifier = "Cell"
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! RestaurantTableViewCell
         
-        // Configure the cell...
-        cell.nameLabel.text = restaurants[indexPath.row].name
+        let restaurant = (searchController?.isActive)! ? searchResults[indexPath.row] : restaurants[indexPath.row]
         
-        if let restaurantImage = self.restaurants[indexPath.row].image {
+        // Configure the cell...
+        cell.nameLabel.text = restaurant.name
+        
+        if let restaurantImage = restaurant.image {
             cell.thumbnailImageView.image = UIImage(data: restaurantImage as Data)
         }
 //        cell.thumbnailImageView.image = UIImage(named: restaurants[indexPath.row].image)
-        cell.locationLabel.text = restaurants[indexPath.row].location
-        cell.typeLabel.text = restaurants[indexPath.row].type
-        cell.heartImageView.isHidden = restaurants[indexPath.row].isVisited ? false : true
+        cell.locationLabel.text = restaurant.location
+        cell.typeLabel.text = restaurant.type
+        cell.heartImageView.isHidden = restaurant.isVisited ? false : true
         
         return cell
     }
@@ -177,6 +216,14 @@ class RestaurantTableViewController: UITableViewController, NSFetchedResultsCont
         return swipeConfiguration
     }
     
+    // 搜尋時不讓USER編輯表格
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        if (searchController?.isActive)! {
+            return false
+        } else {
+            return true
+        }
+    }
     
     // MARK: - Navigation
     
@@ -184,7 +231,7 @@ class RestaurantTableViewController: UITableViewController, NSFetchedResultsCont
         if segue.identifier == "showRestaurantDetail" {
             if let indexPath = tableView.indexPathForSelectedRow {
                 let destinationController = segue.destination as! RestaurantDetailViewController
-                destinationController.restaurant = restaurants[indexPath.row]
+                destinationController.restaurant = (searchController?.isActive)! ? searchResults[indexPath.row] : restaurants[indexPath.row]
             }
         }
     }
@@ -222,6 +269,25 @@ class RestaurantTableViewController: UITableViewController, NSFetchedResultsCont
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
+    }
+    
+    // 過濾搜尋結果方法
+    func filterContent(for searchText: String) {
+        searchResults = restaurants.filter({ (restaurant) -> Bool in
+            if let name = restaurant.name {
+                let isMatch = name.localizedCaseInsensitiveContains(searchText)
+                return isMatch
+            }
+            
+            return false
+        })
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        if let searchText = searchController.searchBar.text {
+            filterContent(for: searchText)
+            tableView.reloadData()
+        }
     }
 }
 

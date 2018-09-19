@@ -120,28 +120,6 @@ class NewRestaurantController: UITableViewController, UITextFieldDelegate, UIIma
     
     @IBAction func save(_ sender: UIBarButtonItem) {
         
-//        if nameTextField.text == "" || typeTextField.text == "" || addressTextField.text == "" || phoneTextField.text == "" || descriptionTextView.text == ""{
-//            let errorAlert = UIAlertController(title: "Oops", message: "We can't proceed because one of the fields is blank. Please note that all fields are required.", preferredStyle: .alert)
-//            let confirm = UIAlertAction(title: "Ok", style: .default)
-//
-//            errorAlert.addAction(confirm)
-//            present(errorAlert, animated: true, completion: nil)
-//        } else {
-//
-//            let successAlert = UIAlertController(title: "Result", message: "Congratation !", preferredStyle: .alert)
-//            let confirm = UIAlertAction(title: "Ok", style: .default) {
-//                action in
-//                print("Name: \(self.nameTextField.text!)")
-//                print("Type: \(self.typeTextField.text!)")
-//                print("Location: \(self.addressTextField.text!)")
-//                print("Phone: \(self.phoneTextField.text!)")
-//                print("Description: \(self.descriptionTextView.text!)")
-//                self.performSegue(withIdentifier: "unwindToHome", sender: self)
-//            }
-//            successAlert.addAction(confirm)
-//            present(successAlert, animated: true, completion: nil)
-//        }
-        
         if nameTextField.text == "" || typeTextField.text == "" || addressTextField.text == "" || phoneTextField.text == "" || descriptionTextView.text == "" {
             let alertController = UIAlertController(title: "Oops", message: "We can't proceed because one of the fields is blank. Please note that all fields are required.", preferredStyle: .alert)
             let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
